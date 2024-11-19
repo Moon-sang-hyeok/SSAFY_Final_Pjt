@@ -1,38 +1,30 @@
 # accounts/serializers.py
-
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from accounts.models import CustomUser
 
+# UserSerializer 정의 (오타 없이)
 class UserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=100)
     class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        model = CustomUser
+        fields = ['username', 'password']
 
+# RegisterSerializer 정의 (회원가입을 위한 serializer)
 class RegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True)
+    full_name = serializers.CharField()
 
     class Meta:
-        model = User
-        fields = ['username', 'password', 'password2', 'email']
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
+        model = CustomUser
+        fields = ['username', 'full_name', 'password']
 
-    def save(self):
-        user = User(
-            username=self.validated_data['username'],
-            email=self.validated_data['email']
-        )
-        password = self.validated_data['password']
-        password2 = self.validated_data['password2']
-
-        if password != password2:
-            raise serializers.ValidationError("Passwords must match.")
-
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User.objects.create_user(**validated_data)
         user.set_password(password)
         user.save()
         return user
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(style={'input_type': 'password'})
