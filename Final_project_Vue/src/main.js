@@ -19,6 +19,7 @@ import CommunityPage from './views/Community.vue'
 import ProfilePage from './views/Profile.vue'
 import LoginPage from './views/Login.vue'
 import SignupPage from './views/Signup.vue'
+import MyPagePage from './views/MyPage.vue'
 
 
 
@@ -33,6 +34,7 @@ const routes =[
     { path: '/profile', component: ProfilePage},
     { path: '/login', component: LoginPage},
     { path: '/signup', component: SignupPage},
+    { path: '/mypage', component: MyPagePage},
 ]
 
 const router = createRouter({
