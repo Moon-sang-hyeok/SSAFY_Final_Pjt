@@ -31,16 +31,17 @@ export default {
     const router = useRouter();
     const authStore = useAuthStore();  // store를 사용하여 상태 관리
 
-    const handleLogin = async () => {
+   const handleLogin = async () => {
       try {
-        const response = await axios.post('http://localhost:8000/accounts/api/login/', {
+        // 로그인 API 호출
+        const response = await axios.post('http://localhost:8000/accounts/api/token/', {
           username: username.value,
           password: password.value,
         });
 
-        // 로그인 성공 후, store에 토큰 저장
-        authStore.setAuthToken(response.data.token);
-
+        // 로그인 성공 후 토큰 저장
+        authStore.setAuthToken(response.data.access);
+        console.log("로그인 성공, 저장된 토큰:", authStore.token);  // 디버깅용으로 토큰 확인
         alert('로그인 성공');
         router.push('/');  // 로그인 후 이동할 페이지
       } catch (error) {
@@ -53,8 +54,6 @@ export default {
 };
 </script>
 
-
-  
 <style scoped>
 .login-page {
   max-width: 400px;
@@ -98,4 +97,3 @@ export default {
   background-color: #555;
 }
 </style>
-  

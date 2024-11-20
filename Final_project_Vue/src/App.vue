@@ -7,6 +7,7 @@
         <li><router-link to="/nearby-banks">주변 은행 검색</router-link></li>
         <li><router-link to="/recommend">금융 상품 추천</router-link></li>
         <li><router-link to="/exchange">환율 계산기</router-link></li>
+        <li><router-link to="/community">커뮤니티</router-link></li>
       </ul>
     </nav>
 

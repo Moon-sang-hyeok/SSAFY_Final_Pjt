@@ -16,8 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.authtoken.views import obtain_auth_token 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')), 
+    path('', include('posts.urls')),  # 게시글 관련 URL
+    path('user-profile/', include('user_profile.urls')),
+
+    
 ]

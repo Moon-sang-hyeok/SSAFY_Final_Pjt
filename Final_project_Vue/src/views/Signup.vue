@@ -13,6 +13,11 @@
       </div>
 
       <div>
+        <label for="email">이메일 : </label>
+        <input type="email" v-model="email" id="email" required />
+      </div>
+
+      <div>
         <label for="password">비밀번호 : </label>
         <input type="password" v-model="password" id="password" required />
       </div>
@@ -38,6 +43,7 @@ export default {
   setup() {
     const username = ref(''); // 아이디
     const fullname = ref(''); // 사용자이름
+    const email = ref(''); // 이메일
     const password = ref('');
     const password2 = ref('');
     const router = useRouter();
@@ -53,20 +59,12 @@ export default {
         // 회원가입 API 호출
         const response = await axios.post('http://localhost:8000/accounts/api/register/', {
           username: username.value,  // 아이디
-          fullname: fullname.value,          // 사용자이름
-          password: password.value,
+          fullname: fullname.value,  // 사용자이름
+          email: email.value,        // 이메일
+          password: password.value,  // 비밀번호
         });
 
         if (response.status === 201) {
-          // 회원가입 성공 후, 로그인 API 호출
-          const loginResponse = await axios.post('http://localhost:8000/accounts/api/token/', {
-            username: username.value,  // 아이디로 로그인
-            password: password.value,
-          });
-
-          // 로그인 성공 후 토큰 저장
-          authStore.setAuthToken(loginResponse.data.access);
-
           alert('회원가입 성공');
           router.push('/login');  // 로그인 페이지로 이동
         }
@@ -76,10 +74,11 @@ export default {
       }
     };
 
-    return { username, fullname, password, password2, handleSubmit };
+    return { username, fullname, email, password, password2, handleSubmit };
   },
 };
 </script>
+
 
 <style scoped>
 .signup-page {

@@ -31,7 +31,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'user_profile',
+    'posts',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'corsheaders',
     'rest_framework',
     'accounts',
@@ -133,6 +136,10 @@ CORS_ALLOWED_ORIGINS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 AUTH_USER_MODEL = 'accounts.CustomUser'

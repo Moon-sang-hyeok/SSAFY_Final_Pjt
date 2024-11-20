@@ -1,6 +1,7 @@
 # accounts/serializers.py
 from rest_framework import serializers
 from accounts.models import CustomUser
+from django.contrib.auth.models import User
 
 # UserSerializer 정의 (오타 없이)
 class UserSerializer(serializers.ModelSerializer):
@@ -13,10 +14,11 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     full_name = serializers.CharField()
+    email = serializers.EmailField()
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'full_name', 'password']
+        fields = ['username', 'email', 'full_name', 'password']
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -28,3 +30,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(style={'input_type': 'password'})
+
+
+

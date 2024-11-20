@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('auth_token') || null,  // 로컬스토리지에서 token 가져오기
