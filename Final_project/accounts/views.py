@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from .serializers import LoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.authtoken.models import Token
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -49,15 +50,20 @@ class LoginView(APIView):
             if user is not None:
                 # 로그인 성공 시 JWT 토큰 발급
                 refresh = RefreshToken.for_user(user)
+                
+                # Token 생성 또는 가져오기
+                token, created = Token.objects.get_or_create(user=user)
+
+                # 로그인을 성공적으로 마친 후 Token의 key 반환
                 return Response({
                     'access': str(refresh.access_token),
                     'refresh': str(refresh),
+                    'token': str(token.key),  # 토큰을 반환합니다.
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class TokenObtainView(APIView):
     def post(self, request):
@@ -66,7 +72,7 @@ class TokenObtainView(APIView):
         
         try:
             # 사용자 인증
-            user = User.objects.get(username=username)
+            user = CustomUser.objects.get(username=username)
             if user.check_password(password):  # 비밀번호 확인
                 refresh = RefreshToken.for_user(user)
                 return Response({
@@ -75,7 +81,6 @@ class TokenObtainView(APIView):
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         
-

@@ -1,79 +1,108 @@
 <template>
-    <div>
-      <h1>게시글 작성</h1>
-      <form @submit.prevent="submitPost">
-        <div>
-          <label for="title">제목:</label>
-          <input type="text" v-model="title" id="title" required />
-        </div>
-        <div>
-          <label for="content">내용:</label>
-          <textarea v-model="content" id="content" required></textarea>
-        </div>
-        <button type="submit">게시글 작성</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import { useAuthStore } from "@/stores/auth";  // Pinia store import
-  
-  export default {
-    data() {
-      return {
-        title: "",  // 제목
-        content: "", // 내용
-      };
-    },
-    methods: {
-      submitPost() {
-        const authStore = useAuthStore(); // Pinia store 가져오기
-        const token = authStore.token; // 저장된 토큰 가져오기
-  
-        if (!token) {
-          alert("로그인이 필요합니다.");
-          return;
-        }
-  
-        const postData = {
-          title: this.title,
-          content: this.content,
-        };
-  
-        fetch("http://localhost:8000/api/posts/create/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,  // 토큰을 헤더에 추가
+  <div>
+    <h1>게시글 작성</h1>
+    <form @submit.prevent="submitPost">
+      <div>
+        <label for="title">제목:</label>
+        <input type="text" v-model="title" id="title" required />
+      </div>
+
+      <div>
+        <label for="content">내용:</label>
+        <textarea v-model="content" id="content" required></textarea>
+      </div>
+
+      <button type="submit">작성</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+import axios from 'axios';
+import { useAuthStore } from '../stores/auth';  // Pinia store import
+
+export default {
+  name: 'CreatePost',
+  data() {
+    return {
+      title: '',
+      content: '',
+    };
+  },
+  methods: {
+    async submitPost() {
+      const authStore = useAuthStore(); // Pinia store에서 토큰을 가져옴
+      const token = authStore.token; // 저장된 토큰을 가져옴
+
+      if (!token) {
+        alert('로그인 후 게시글을 작성할 수 있습니다.');
+        this.$router.push('/login');  // 로그인 페이지로 리디렉션
+        return;
+      }
+
+      // POST 요청 시 Authorization 헤더에 토큰을 포함
+      try {
+        const response = await axios.post(
+          'http://localhost:8000/api/posts/create/', 
+          {
+            title: this.title,
+            content: this.content,
           },
-          body: JSON.stringify(postData), // 게시글 데이터 전송
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("게시글 작성에 실패했습니다.");
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Bearer 방식으로 토큰을 전달
             }
-            return response.json();
-          })
-          .then((data) => {
-            // 작성된 게시글 페이지로 이동
-            this.$router.push(`/posts/${data.id}`);
-          })
-          .catch((error) => {
-            console.error(error);
-            alert("게시글 작성 중 오류가 발생했습니다.");
-          });
-      },
+          }
+        );
+
+        alert('게시글 작성 성공!');
+        this.$router.push('/community');  // 게시글 작성 후 홈으로 리디렉션
+      } catch (error) {
+        console.error('게시글 작성에 실패했습니다.', error);
+        alert('게시글 작성에 실패했습니다.');
+      }
     },
-  };
-  </script>
-  
-  <style scoped>
-  form {
-    margin-top: 20px;
-  }
-  input, textarea {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  </style>
-  
+  },
+};
+</script>
+
+<style scoped>
+/* 스타일 코드 */
+h1 {
+  text-align: center;
+}
+
+form {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+form div {
+  margin-bottom: 15px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+</style>

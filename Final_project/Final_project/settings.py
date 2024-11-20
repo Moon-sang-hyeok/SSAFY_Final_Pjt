@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,12 +32,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'banks',
     'user_profile',
     'posts',
+    'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'corsheaders',
-    'rest_framework',
     'accounts',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -133,13 +135,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Vue.js가 실행되는 로컬 서버 주소 (Vite 개발 서버)
 ]
+CORS_ALLOW_CREDENTIALS = True
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    ],
+    ),
 }
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # access token 만료 시간 (1시간)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # refresh token 만료 시간 (7일)
+    'ROTATE_REFRESH_TOKENS': False,  # refresh token 회전 여부
+    'BLACKLIST_AFTER_ROTATION': False,  # 회전 후 refresh token을 블랙리스트에 추가 여부
+}
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
+    'accounts.backends.CustomAuthenticationBackend',  # 커스텀 인증 백엔드
+]

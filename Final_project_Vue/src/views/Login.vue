@@ -30,8 +30,17 @@ export default {
     const password = ref('');
     const router = useRouter();
     const authStore = useAuthStore();  // store를 사용하여 상태 관리
+    
+    const login = async () => {
+      // 로그인 API 호출 후 받은 토큰
+      const response = await axios.post('/api/login', { username, password });
+      const token = response.data.token;
 
-   const handleLogin = async () => {
+      // Pinia store에 토큰 저장
+      authStore.setToken(token);
+    };
+    console.log(authStore.token);  
+    const handleLogin = async () => {
       try {
         // 로그인 API 호출
         const response = await axios.post('http://localhost:8000/accounts/api/token/', {
@@ -39,17 +48,26 @@ export default {
           password: password.value,
         });
 
-        // 로그인 성공 후 토큰 저장
+        // 로그인 성공 후 토큰 저장 (access 및 refresh 토큰 모두 저장 가능)
         authStore.setAuthToken(response.data.access);
+        authStore.setRefreshToken(response.data.refresh);  // refresh 토큰 저장
+
         console.log("로그인 성공, 저장된 토큰:", authStore.token);  // 디버깅용으로 토큰 확인
         alert('로그인 성공');
         router.push('/');  // 로그인 후 이동할 페이지
       } catch (error) {
-        alert('아이디 또는 비밀번호가 잘못되었습니다.');
+        // 오류 처리
+        if (error.response) {
+          // 서버에서 응답을 받았지만 에러가 발생한 경우
+          alert(error.response.data.detail || '아이디 또는 비밀번호가 잘못되었습니다.');
+        } else {
+          // 서버 연결 자체가 안 될 경우
+          alert('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+        }
       }
     };
 
-    return { username, password, handleLogin };
+    return { username, password, handleLogin, login, };
   },
 };
 </script>

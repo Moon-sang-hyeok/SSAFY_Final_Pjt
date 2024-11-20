@@ -23,6 +23,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')), 
     path('', include('posts.urls')),  # 게시글 관련 URL
     path('user-profile/', include('user_profile.urls')),
+    path('banks/', include('banks.urls')),
 
     
 ]

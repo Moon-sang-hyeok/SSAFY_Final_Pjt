@@ -73,7 +73,7 @@
       const response = await fetch("http://localhost:8000/user-profile/profile/", {
         method: "GET",
         headers: {
-          "Authorization": `Token ${token}`,  // Pinia store에서 가져온 token을 헤더에 포함
+          "Authorization": `Bearer ${token}`,  // Pinia store에서 가져온 token을 헤더에 포함
         },
       });
       if (response.ok) {
@@ -101,7 +101,7 @@
       const response = await fetch("http://localhost:8000/user-profile/financial-products/", {
         method: "GET",
         headers: {
-          "Authorization": `Token ${token}`,  // Pinia store에서 가져온 token을 헤더에 포함
+          "Authorization": `Bearer ${localStorage.getItem('auth_token')}`,  // Pinia store에서 가져온 token을 헤더에 포함
         },
       });
       if (response.ok) {
