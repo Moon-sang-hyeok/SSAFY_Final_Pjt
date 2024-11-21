@@ -12,7 +12,7 @@ import { createRouter, createWebHistory} from 'vue-router'
 import App from './App.vue'
 import MainPage from './views/MainPage.vue'
 import ExchangePage from './views/Exchange.vue'
-import SavingsComparisonPage from './views/SavingsComparison.vue'
+import ProductsComparisonPage from './views/ProductsComparison.vue'
 import NearbyBanksPage from './views/NearbyBanks.vue'
 import RecommendPage from './views/Recommend.vue'
 import CommunityPage from './views/Community.vue'
@@ -21,6 +21,7 @@ import LoginPage from './views/Login.vue'
 import SignupPage from './views/Signup.vue'
 import MyPagePage from './views/MyPage.vue'
 import CreatePostPage from './views/CreatePost.vue' 
+import SavingsProductDetail from './components/SavingsProductDetail.vue'
 
 
 
@@ -28,7 +29,17 @@ import CreatePostPage from './views/CreatePost.vue'
 const routes =[
     { path: '/', component: MainPage},
     { path: '/exchange', component: ExchangePage},
-    { path: '/savings-comparison', component: SavingsComparisonPage},
+    { path: '/products-comparison', component: ProductsComparisonPage},
+    {
+        path: '/savings-comparison/:id',
+        component: SavingsProductDetail,
+        props: true, // 라우트 매개변수를 컴포넌트로 전달
+    },
+    {
+        path: '/deposits-comparison/:id',
+        component: DepositsProductDetail,
+        props: true, // 라우트 매개변수를 컴포넌트로 전달
+    },
     { path: '/nearby-banks', component: NearbyBanksPage},
     { path: '/recommend', component: RecommendPage},
     { path: '/community', component: CommunityPage},
@@ -47,6 +58,7 @@ const router = createRouter({
 const app = createApp(App)
 
 import { useAuthStore } from './stores/auth'; // auth 스토어 가져오기
+import DepositsProductDetail from './components/DepositsProductDetail.vue'
 const pinia = createPinia();
 app.use(pinia);
 const authStore = useAuthStore();

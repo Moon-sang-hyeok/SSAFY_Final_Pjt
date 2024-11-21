@@ -1,18 +1,15 @@
 <template>
   <div id="app">
     <nav>
-      <ul>
+      <ul >
         <li><router-link to="/">Home</router-link></li>
-        <li><router-link to="/savings-comparison">예적금 상품 비교</router-link></li>
+        <li><router-link to="/products-comparison">예적금 상품 비교</router-link></li>
         <li><router-link to="/nearby-banks">주변 은행 검색</router-link></li>
         <li><router-link to="/recommend">금융 상품 추천</router-link></li>
         <li><router-link to="/exchange">환율 계산기</router-link></li>
-        <li><router-link to="/community">커뮤니티</router-link></li>
       </ul>
-    </nav>
 
-    <!-- 로그인 및 회원가입/로그아웃 버튼 -->
-    <div class="auth-buttons">
+      <div class="auth-buttons">
       <!-- 로그인과 회원가입 버튼 -->
       <router-link v-if="!isLoggedIn" to="/login" class="auth-button">Login</router-link>
       <router-link v-if="!isLoggedIn" to="/signup" class="auth-button">Sign Up</router-link>
@@ -22,8 +19,12 @@
       <router-link v-if="isLoggedIn" to="/mypage" class="auth-button">My Page</router-link>
     </div>
 
+    </nav>
+    <!-- 로그인 및 회원가입/로그아웃 버튼 -->
+    
     <router-view></router-view>  <!-- 라우터 뷰로 각 페이지가 표시됩니다 -->
   </div>
+
 </template>
 
 <script>
@@ -71,6 +72,11 @@ nav {
   background-color: #333;
   color: white;
   padding: 10px;
+  position: fixed;  /* 화면에 고정 */
+  top: 0;
+  left: 0;
+  width: 100%;  /* 화면의 전체 너비에 맞추기 */
+  z-index: 1000;  /* 다른 요소들보다 위에 표시되도록 */
 }
 
 nav ul {
@@ -89,9 +95,16 @@ nav a {
 }
 
 nav a:hover {
-  text-decoration: underline;
+  background-color: white;  /* 배경색을 흰색으로 변경 */
+  color: #333;  /* 글자 색을 어두운 색으로 변경 */
+  padding: 30px 1px;  /* 효과가 커지도록 패딩을 조정 */
+  font-size: 18px;  /* hover 시 글씨 크기 증가 */
+  font-weight: 700;  /* hover 시 글씨 굵기 증가 */
 }
 
+#app {
+  padding-top: 30px;  /* 네비게이션 바의 높이에 맞게 여백을 추가 */
+}
 /* 로그인 및 회원가입 버튼 스타일 */
 .auth-buttons {
   position: absolute;

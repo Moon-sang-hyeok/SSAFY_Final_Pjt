@@ -16,13 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.authtoken.views import obtain_auth_token 
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls')), 
-    path('', include('posts.urls')),  # 게시글 관련 URL
-    path('user-profile/', include('user_profile.urls')),
-    path('banks/', include('banks.urls')),
-    path('products/', include('products.urls')),
+from .views import SavingProductsView,SavingDetailView,DepositProductsView,DepositDetailView
+urlpatterns = [    
+    path('api/savings-comparison/', SavingProductsView.as_view(), name='save-savings'),
+    path('api/savings-comparison/<int:product_id>/', SavingDetailView.as_view(), name='saving-detail'),
+    path('api/deposits-comparison/', DepositProductsView.as_view(), name='save-deposits'),
+    path('api/deposits-comparison/<int:product_id>/', DepositDetailView.as_view(), name='deposit-detail'),  
 ]
