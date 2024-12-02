@@ -1,52 +1,53 @@
 import { defineStore } from 'pinia';
+import { jwtDecode} from 'jwt-decode'; // JWT 검증 라이브러리 추가
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('auth_token') || '',  // 로컬스토리지에서 token 가져오기
-    refreshToken: localStorage.getItem('refresh_token') || '', // refreshToken 상태 추가
-    user: null,  // 사용자 정보를 저장할 변수
+    token: null,
+    user: null,
   }),
 
   actions: {
     setAuthToken(token) {
       this.token = token;
-      localStorage.setItem('auth_token', token);  // 토큰을 로컬스토리지에 저장
-    },
-    removeToken() {
-      this.token = '';  // 빈 문자열로 초기화
-      localStorage.removeItem('auth_token');  // 로컬 스토리지에서 토큰을 삭제
-    },
-    setRefreshToken(refreshToken) {
-      this.refreshToken = refreshToken;
-      localStorage.setItem('refresh_token', refreshToken);  // refreshToken을 로컬스토리지에 저장
-    },
-    
-    setUser(user) {
-      this.user = user;
-    },
-    logout() {
-      this.token = '';  // 토큰을 빈 문자열로 초기화
-      this.refreshToken = '';  // refreshToken도 빈 문자열로 초기화
-      this.user = null;  // 사용자 정보 초기화
-      localStorage.removeItem('auth_token');  // 로컬스토리지에서 token 제거
-      localStorage.removeItem('refresh_token');  // 로컬스토리지에서 refreshToken 제거
+      localStorage.setItem('auth_token', token);
     },
 
-    // 로그인 상태 확인
+    setUser(userId) {
+      this.user = userId;
+      localStorage.setItem('user_id', userId);
+    },
+
+    logout() {
+      this.token = null;
+      this.user = null;
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_id');
+    },
+
     initialize() {
       const token = localStorage.getItem('auth_token');
-      if (token) {
-        this.token = token;  // 로컬스토리지에서 token 가져오기
+      const userId = localStorage.getItem('user_id');
+      if (token && this.isTokenValid(token)) {
+        this.token = token;
+        this.user = userId ? Number(userId) : null;
+      } else {
+        this.logout(); // 토큰이 유효하지 않으면 로그아웃 처리
       }
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (refreshToken) {
-        this.refreshToken = refreshToken;  // 로컬스토리지에서 refreshToken 가져오기
+    },
+
+    isTokenValid(token) {
+      try {
+        const decoded = jwtDecode(token);
+        return decoded.exp > Date.now() / 1000;
+      } catch (error) {
+        return false;
       }
     },
   },
 
   getters: {
-    isAuthenticated: (state) => !!state.token,  // 토큰이 있으면 인증된 상태로 반환
-    getUser: (state) => state.user,  // 사용자 정보 반환
+    isAuthenticated: (state) => !!state.token && state.user !== null,
+    currentUser: (state) => state.user,
   },
 });

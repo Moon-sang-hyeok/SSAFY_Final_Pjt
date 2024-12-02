@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User  # 사용자 모델 임포트
 from .models import FinancialProduct
 from .serializers import FinancialProductSerializer, UserSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # 사용자 정보 조회
 @api_view(['GET'])
@@ -13,12 +14,17 @@ def user_info(request):
     """
     로그인한 사용자 정보를 반환하는 API
     """
-    if request.user.is_authenticated:
-        # 사용자 정보 직렬화
+    try:
+        if not request.user or not request.user.is_authenticated:
+            return Response({"detail": "Unauthorized"}, status=401)
+
+        # 정상적으로 인증된 경우
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
-    else:
-        return Response({"detail": "Unauthorized"}, status=401)
+    except Exception as e:
+        # 오류를 콘솔에 출력하여 추적 가능하게 만듦
+        print(f"Error in user_info view: {str(e)}")
+        return Response({"detail": "Internal Server Error"}, status=500)
 
 # 사용자 정보 수정
 @api_view(['PATCH'])

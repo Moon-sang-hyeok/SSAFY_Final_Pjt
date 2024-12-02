@@ -1,19 +1,22 @@
 <template>
   <div class="login-page">
-    <h1>로그인</h1>
-    <form @submit.prevent="handleLogin">
-      <div>
-        <label for="name">아이디 : </label>
-        <input type="text" v-model="username" id="name" required />
-      </div>
+    <div class="login-container">
+      <h1>로그인</h1>
+      <form @submit.prevent="handleLogin">
+        <div class="input-group">
+          <label for="username">아이디</label>
+          <input type="text" v-model="username" id="username" placeholder="아이디를 입력하세요" required />
+        </div>
 
-      <div>
-        <label for="password">비밀번호 : </label>
-        <input type="password" v-model="password" id="password" required />
-      </div>
+        <div class="input-group">
+          <label for="password">비밀번호</label>
+          <input type="password" v-model="password" id="password" placeholder="비밀번호를 입력하세요" required />
+        </div>
 
-      <button type="submit">로그인</button>
-    </form>
+        <button type="submit" class="login-button">로그인</button>
+      </form>
+      <p class="forgot-password"><router-link to="/forgot-password">비밀번호를 잊으셨나요?</router-link></p>
+    </div>
   </div>
 </template>
 
@@ -21,7 +24,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { useAuthStore } from '../stores/auth';  // store import
+import { useAuthStore } from '../stores/auth'; // store import
 
 export default {
   name: 'Login',
@@ -29,89 +32,123 @@ export default {
     const username = ref('');
     const password = ref('');
     const router = useRouter();
-    const authStore = useAuthStore();  // store를 사용하여 상태 관리
-    
-    const login = async () => {
-      // 로그인 API 호출 후 받은 토큰
-      const response = await axios.post('/api/login', { username, password });
-      const token = response.data.token;
+    const authStore = useAuthStore(); // store를 사용하여 상태 관리
 
-      // Pinia store에 토큰 저장
-      authStore.setToken(token);
-    };
-    console.log(authStore.token);  
     const handleLogin = async () => {
       try {
-        // 로그인 API 호출
-        const response = await axios.post('http://localhost:8000/accounts/api/token/', {
+        const response = await axios.post('http://localhost:8000/accounts/api/login/', {
           username: username.value,
           password: password.value,
         });
+        console.log('응답 받은 토큰:', response.data.token);
 
-        // 로그인 성공 후 토큰 저장 (access 및 refresh 토큰 모두 저장 가능)
-        authStore.setAuthToken(response.data.access);
-        authStore.setRefreshToken(response.data.refresh);  // refresh 토큰 저장
+        if (response.data.token) {
+          // 로그인 성공 후, store에 토큰 저장
+          authStore.setAuthToken(response.data.token);
 
-        console.log("로그인 성공, 저장된 토큰:", authStore.token);  // 디버깅용으로 토큰 확인
-        alert('로그인 성공');
-        router.push('/');  // 로그인 후 이동할 페이지
-      } catch (error) {
-        // 오류 처리
-        if (error.response) {
-          // 서버에서 응답을 받았지만 에러가 발생한 경우
-          alert(error.response.data.detail || '아이디 또는 비밀번호가 잘못되었습니다.');
+          // 로그인 후 사용자 ID를 저장 (예: 응답에서 user_id를 받아와서 저장)
+          const userId = response.data.user_id;  // 서버에서 user_id 받아오기
+          if (userId) {
+            authStore.setUser(userId);  // Pinia store에 user_id 저장
+          } else {
+            alert('사용자 ID를 받을 수 없습니다.');
+            return;
+          }
+
+          alert('로그인 성공');
+          router.push('/');  // 로그인 후 이동할 페이지
         } else {
-          // 서버 연결 자체가 안 될 경우
-          alert('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          alert('토큰을 받을 수 없습니다.');
         }
+      } catch (error) {
+        alert('아이디 또는 비밀번호가 잘못되었습니다.');
       }
     };
 
-    return { username, password, handleLogin, login, };
+    return { username, password, handleLogin };
   },
 };
 </script>
 
 <style scoped>
 .login-page {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: linear-gradient(to bottom, white, #dfdfdf);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.login-page h1 {
+.login-container {
+  background: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+h1 {
   text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.input-group {
   margin-bottom: 20px;
 }
 
-.login-page form {
-  display: flex;
-  flex-direction: column;
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 600;
 }
 
-.login-page label {
-  margin: 10px 0 5px;
-}
-
-.login-page input {
-  padding: 8px;
-  margin-bottom: 15px;
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background: #f9f9f9;
+  transition: border-color 0.3s ease;
 }
 
-.login-page button {
-  padding: 10px;
-  background-color: #333;
+.input-group input:focus {
+  border-color: #4f5bfe;
+  outline: none;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #1f76f8;
   color: white;
+  font-size: 1.1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.login-page button:hover {
-  background-color: #555;
+.login-button:hover {
+  background-color: #394F78;
+}
+
+.forgot-password {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.forgot-password a {
+  text-decoration: none;
+  color: #4facfe;
+  font-weight: 500;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
 }
 </style>

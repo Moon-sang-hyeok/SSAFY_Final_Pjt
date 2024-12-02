@@ -1,42 +1,46 @@
 # posts/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Post
-from .serializers import PostSerializer
+
+from rest_framework import viewsets, permissions
+from rest_framework.exceptions import NotFound
+from .models import Post, Comment
+from .serializers import PostSerializer, CommentSerializer
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
 
-class PostCreateView(APIView):
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
 
-    def post(self, request, *args, **kwargs):
-        # 로그인된 사용자만 사용
-        if not request.user.is_authenticated:
-            return Response({"error": "사용자가 인증되지 않았습니다."}, status=status.HTTP_403_FORBIDDEN)
-        
-        # 로그인한 사용자의 ID를 author 필드에 할당
-        data = request.data
-        data['author'] = request.user.id  # request.user.id는 로그인한 사용자의 id
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow authors to edit or delete their posts or comments.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:  # GET, HEAD, OPTIONS
+            return True
+        return obj.author == request.user
 
-        # Serializer 인스턴스를 생성하고 유효성 검사
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            try:
-                post = serializer.save()  # 새 게시글 생성
-                return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                # 예외가 발생한 경우
-                return Response({"error": f"게시글 저장 중 오류 발생: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            # 유효성 검사 실패 시 오류 반환
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class PostListView(APIView):
-    authentication_classes = [TokenAuthentication]
+class PostViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
     permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.is_authenticated:
+            # 인증된 사용자만 Post를 작성할 수 있도록 함
+            serializer.save(author=user)
+        else:
+            # 인증되지 않은 사용자는 Post를 작성할 수 없음
+            raise PermissionDenied("You must be logged in to create a post.")
 
-    def get(self, request):
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthorOrReadOnly]  # 작성자만 수정/삭제 가능
+
+    def perform_create(self, serializer):
+        try:
+            # 댓글을 작성하려는 게시글 찾기
+            post = Post.objects.get(id=self.request.data['post'])
+            serializer.save(author=self.request.user, post=post)
+        except Post.DoesNotExist:
+            raise NotFound('The specified post does not exist.')
+

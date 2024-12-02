@@ -2,8 +2,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
-from rest_framework.authtoken.models import Token
-
 
 # CustomUser 모델을 관리하기 위한 관리자 설정
 class CustomUserAdmin(UserAdmin):
@@ -23,4 +21,3 @@ class CustomUserAdmin(UserAdmin):
 
 # CustomUser 모델을 관리자에 등록
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Token)
